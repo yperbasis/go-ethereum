@@ -17,6 +17,7 @@
 package tests
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/core/rawdb"
@@ -61,6 +62,23 @@ func TestBlockchain(t *testing.T) {
 		}
 		if err := bt.checkFailure(t, test.Run(true, rawdb.PathScheme, nil)); err != nil {
 			t.Errorf("test in path mode with snapshotter failed: %v", err)
+		}
+	})
+	// There is also a LegacyTests folder, containing blockchain tests generated
+	// prior to Istanbul. However, they are all derived from GeneralStateTests,
+	// which run natively, so there's no reason to run them here.
+}
+
+func TestExecutionSpec(t *testing.T) {
+	bt := new(testMatcher)
+
+	dir := filepath.Join(".", "fixtures")
+
+	bt.skipLoad(`^cancun/`)
+
+	bt.walk(t, dir, func(t *testing.T, name string, test *BlockTest) {
+		if err := bt.checkFailure(t, test.Run(false, rawdb.HashScheme, nil)); err != nil {
+			t.Errorf("test in hash mode without snapshotter failed: %v", err)
 		}
 	})
 	// There is also a LegacyTests folder, containing blockchain tests generated
